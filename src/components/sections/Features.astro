@@ -1,80 +1,79 @@
 ---
-import Container from "../shared/Container.astro";
-import Paragraph from "../shared/Paragraph.astro";
-import Title from "../shared/Title.astro";
-import { Image } from "astro:assets";
+import Container from '../shared/Container.astro';
+import Paragraph from '../shared/Paragraph.astro';
+import Title from '../shared/Title.astro';
+import { Image } from 'astro:assets';
 ---
 
 <section id="features">
-	<Container className="flex flex-col midmd:flex-row gap-10 lg:gap-12">
-		<div class="flex-1 flex midmd:w-7/12 lg:w-1/2 flex-col">
-			<Title>
-				We work hard to create eye-catching and intuitive interface
-				designs that provide users with enjoyable experience.
-			</Title>
-			<Paragraph className="mt-8">
-				When working on a project, we not only establish scalable
-				architecture design using the best industry practices but also
-				provide a high level of data security.
-			</Paragraph>
-			<Paragraph className="mt-2">
-				Constant updating, modifying, and re-assessing of software is
-				one way to make them user-oriented and up-to-date. Through such
-				a service, we give businesses the technological support they
-				need.
-			</Paragraph>
-			<ul class="mt-8 space-y-4 text-heading-3 font-medium">
-				<li>
-					<span
-						class="font-bold bg-box-bg rounded-full w-8 h-8 mr-3 text-primary inline-flex justify-center items-center"
-						>&checkmark;</span
-					> Websites and Platforms
-				</li>
-				<li>
-					<span
-						class="font-bold bg-box-bg rounded-full w-8 h-8 mr-3 text-primary inline-flex justify-center items-center"
-						>&checkmark;</span
-					> Mobile Apps
-				</li>
-				<li>
-					<span
-						class="font-bold bg-box-bg rounded-full w-8 h-8 mr-3 text-primary inline-flex justify-center items-center"
-						>&checkmark;</span
-					> Strategy and Branding
-				</li>
-				<li>
-					<span
-						class="font-bold bg-box-bg rounded-full w-8 h-8 mr-3 text-primary inline-flex justify-center items-center"
-						>&checkmark;</span
-					> Design Concept
-				</li>
-			</ul>
-		</div>
+  <Container className="flex flex-col md:flex-row gap-10 lg:gap-12">
+    <div class="flex-1 flex midmd:w-7/12 lg:w-1/2 flex-col">
+      <Title>
+        We work hard to create eye-catching and intuitive interface designs that
+        provide users with enjoyable experience.
+      </Title>
+      <Paragraph className="mt-8">
+        When working on a project, we not only establish scalable architecture
+        design using the best industry practices but also provide a high level
+        of data security.
+      </Paragraph>
+      <Paragraph className="mt-2">
+        Constant updating, modifying, and re-assessing of software is one way to
+        make them user-oriented and up-to-date. Through such a service, we give
+        businesses the technological support they need.
+      </Paragraph>
+      <ul class="mt-8 space-y-4 text-heading-3 font-medium">
+        <li>
+          <span
+            class="font-bold bg-box-bg rounded-full w-8 h-8 mr-3 text-primary inline-flex justify-center items-center"
+            >&checkmark;</span
+          > Websites and Platforms
+        </li>
+        <li>
+          <span
+            class="font-bold bg-box-bg rounded-full w-8 h-8 mr-3 text-primary inline-flex justify-center items-center"
+            >&checkmark;</span
+          > Mobile Apps
+        </li>
+        <li>
+          <span
+            class="font-bold bg-box-bg rounded-full w-8 h-8 mr-3 text-primary inline-flex justify-center items-center"
+            >&checkmark;</span
+          > Strategy and Branding
+        </li>
+        <li>
+          <span
+            class="font-bold bg-box-bg rounded-full w-8 h-8 mr-3 text-primary inline-flex justify-center items-center"
+            >&checkmark;</span
+          > Design Concept
+        </li>
+      </ul>
+    </div>
 
-		<div
-			class="max-w-md mx-auto midmd:max-w-none lg:mx-0 lg:pr-10 xl:pr-2 flex-1 flex w-11/12 midmd:w-5/12 lg:w-1/2 midmd:h-auto"
-		>
-			<div class="w-full h-80 sm:h-96 midmd:h-full relative">
-				<div
-					class="absolute rotate-45 -left-5 md:-left-10 lg:-left-20 xl:-left-24 p-1 top-1/2 w-16 h-16 bg-gradient-to-br from-primary to-orange-400 blur-3xl opacity-50"
-				>
-				</div>
-				<div
-					class="absolute p-1 -top-4 md:-top-10 right-0 w-20 h-20 bg-gradient-to-br from-primary to-orange-400 rounded-full blur-3xl opacity-60"
-				>
-				</div>
+    <div
+      class="max-w-md mx-auto midmd:max-w-none lg:mx-0 lg:pr-10 xl:pr-2 flex-1 flex w-11/12 midmd:w-5/12 lg:w-1/2 midmd:h-auto"
+    >
+      <div class="w-full h-80 sm:h-96 midmd:h-full relative">
+        <div
+          class="absolute rotate-45 -left-5 md:-left-10 lg:-left-20 xl:-left-24 p-1 top-1/2 w-16 h-16 bg-gradient-to-br from-primary to-orange-400 blur-3xl opacity-50"
+        >
+        </div>
+        <div
+          class="absolute p-1 -top-4 md:-top-10 right-0 w-20 h-20 bg-gradient-to-br from-primary to-orange-400 rounded-full blur-3xl opacity-60"
+        >
+        </div>
 
-				<span
-					class="absolute w-full aspect-[16/5] -skew-x-12 rounded-full bg-gradient-to-tr from-primary to-green-400 opacity-40 blur-2xl left-0 bottom-0"
-				></span>
-				<Image
-					src={"/images/crm.jpeg"}
-					alt="banner image"
-					width="1240"
-					height="1385"
-					class="w-auto left-1/2 -translate-x-1/2 absolute bottom-0 max-h-full"
-				/>
-			</div>
-		</div>
-	</Container>
+        <span
+          class="absolute w-full aspect-[16/5] -skew-x-12 rounded-full bg-gradient-to-tr from-primary to-green-400 opacity-40 blur-2xl left-0 bottom-0"
+        ></span>
+        <Image
+          src={'/images/crm.jpeg'}
+          alt="crm"
+          width="1240"
+          height="1385"
+          class="w-auto left-1/2 -translate-x-1/2 absolute bottom-0 max-h-full"
+        />
+      </div>
+    </div>
+  </Container>
 </section>
