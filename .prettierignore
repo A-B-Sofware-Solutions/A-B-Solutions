@@ -1,0 +1,11 @@
+# Ignore generated files
+/_astro/
+
+# Ignore build output
+/build/
+
+# Ignore node_modules directory
+/node_modules/
+
+# Ignore hidden files and directories
+.*
