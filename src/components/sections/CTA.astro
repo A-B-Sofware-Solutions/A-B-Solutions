@@ -54,7 +54,9 @@ import Paragraph from '../shared/Paragraph.astro';
         </Paragraph>
         <div class="mx-auto max-w-md sm:max-w-xl pt-10">
           <SendInquiry>
-            <Button className={'w-full'}>Get Started</Button>
+            <Button className={'w-full'} onClick={() => console.log('pressed')}>
+              Get Started
+            </Button>
           </SendInquiry>
         </div>
       </div>

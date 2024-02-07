@@ -370,10 +370,11 @@ export default function SendInquiry({ children }: SendInquiryProps) {
 
             <Button type="submit">Submit</Button>
           </form>
-          <SheetFooter>
-            <SheetClose>Close</SheetClose>
-          </SheetFooter>
         </Form>
+
+        <SheetFooter>
+          <SheetClose>Close</SheetClose>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
