@@ -69,17 +69,23 @@ const schema = z.object({
 
 type Inquiry = z.infer<typeof schema>;
 
-// interface SendInquiryProps {
-//   children?: React.ReactNode;
-// }
+interface SendInquiryProps {
+  isHero?: boolean;
+}
 
-export default function SendInquiry() {
+export default function SendInquiry({ isHero }: SendInquiryProps) {
   const [countries, setCountries] = useState<string[]>([]);
   const [captcha, setCaptcha] = useState<string>(generateCaptcha());
 
   useEffect(() => {
     loadCountries().then((countries) => setCountries(countries));
   }, []);
+
+  useEffect(() => {
+    if (isHero) {
+      form.setValue('email', localStorage.getItem('email'));
+    }
+  }, [isHero]);
 
   const form = useForm<Inquiry>({
     resolver: zodResolver(schema),
@@ -106,7 +112,13 @@ export default function SendInquiry() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className={'w-full'}>Get Started</Button>
+        {isHero ? (
+          <Button id="getStartedButton" className="rounded-3xl py-6 w-64">
+            Inquire Now
+          </Button>
+        ) : (
+          <Button className={'w-full'}>Inquire Now</Button>
+        )}
       </SheetTrigger>
       <SheetContent side={'top'} className="mx-auto w-full max-w-2xl">
         <SheetHeader>
