@@ -10,12 +10,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,6 +26,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
+
+import generateCaptcha from '@/utils/generateCapcha';
 
 async function loadCountries(): Promise<string[]> {
   const response = await fetch('https://restcountries.com/v2/all');
@@ -50,6 +47,13 @@ const schema = z.object({
     'Collaboration Opportunity',
     'Other',
   ]),
+  relationship: z.enum([
+    'Customer',
+    'Partner',
+    'Employee',
+    'Consultant',
+    'Other',
+  ]),
   salutation: z.enum(['Mr.', 'Ms.']).optional(),
   firstName: z.string(),
   lastName: z.string(),
@@ -60,7 +64,7 @@ const schema = z.object({
   communication: z.enum(['email', 'phone']),
   code: z.string(),
   newsletter: z.boolean().optional(),
-  termsAndConditions: z.boolean(),
+  termsAndConditions: z.boolean().optional(),
 });
 
 type Inquiry = z.infer<typeof schema>;
@@ -71,6 +75,7 @@ type Inquiry = z.infer<typeof schema>;
 
 export default function SendInquiry() {
   const [countries, setCountries] = useState<string[]>([]);
+  const [captcha, setCaptcha] = useState<string>(generateCaptcha());
 
   useEffect(() => {
     loadCountries().then((countries) => setCountries(countries));
@@ -78,6 +83,7 @@ export default function SendInquiry() {
 
   const form = useForm<Inquiry>({
     resolver: zodResolver(schema),
+    mode: 'onSubmit',
     defaultValues: {
       newsletter: false,
       termsAndConditions: false,
@@ -85,8 +91,15 @@ export default function SendInquiry() {
   });
 
   function onSubmit(values: Inquiry) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+    console.log(values);
+    if (values.code !== captcha) {
+      form.setError('code', {
+        type: 'manual',
+        message: 'Invalid code',
+      });
+      return;
+    }
+
     console.log(values);
   }
 
@@ -95,7 +108,7 @@ export default function SendInquiry() {
       <SheetTrigger asChild>
         <Button className={'w-full'}>Get Started</Button>
       </SheetTrigger>
-      <SheetContent side={'top'} className="w-screen max-w-2xl p-4">
+      <SheetContent side={'top'} className="mx-auto w-full max-w-2xl">
         <SheetHeader>
           <SheetTitle>Inquiry</SheetTitle>
           <SheetDescription>
@@ -106,19 +119,25 @@ export default function SendInquiry() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-4 mt-4">
               <div className="flex flex-col gap-2 w-full">
-                <Label htmlFor="subject">Subject</Label>
+                <Label htmlFor="subject">
+                  Subject: <span className="text-red-500">*</span>
+                </Label>
                 <Input {...form.register('subject')} />
                 <FormMessage />
               </div>
               <div className="flex flex-col gap-2 w-full">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">
+                  Description: <span className="text-red-500">*</span>
+                </Label>
                 <Textarea {...form.register('description')} />
                 <FormMessage />
               </div>
 
               <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="inquiryType">Inquiry Type</Label>
+                  <Label htmlFor="inquiryType">
+                    I am writing about: <span className="text-red-500">*</span>
+                  </Label>
                   <Select {...form.register('inquiryType')}>
                     <SelectTrigger className="w-[220px]">
                       <SelectValue placeholder="- Please Select" />
@@ -158,23 +177,45 @@ export default function SendInquiry() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="salutation">Salutation</Label>
-                <Select {...form.register('salutation')}>
-                  <SelectTrigger className="w-[220px]">
-                    <SelectValue placeholder="- Please Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Mr.">Mr.</SelectItem>
-                    <SelectItem value="Ms.">Ms.</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
+              <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="relationship">
+                    Relationship to us: <span className="text-red-500">*</span>
+                  </Label>
+                  <Select {...form.register('relationship')}>
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="- Please Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Customer">Customer</SelectItem>
+                      <SelectItem value="Partner">Partner</SelectItem>
+                      <SelectItem value="Employee">Employee</SelectItem>
+                      <SelectItem value="Consultant">Consultant</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="salutation">Salutation</Label>
+                  <Select {...form.register('salutation')}>
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="- Please Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Mr.">Mr.</SelectItem>
+                      <SelectItem value="Ms.">Ms.</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </div>
               </div>
 
               <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName">
+                    First Name: <span className="text-red-500">*</span>
+                  </Label>
 
                   <Input
                     autoCapitalize="none"
@@ -187,7 +228,9 @@ export default function SendInquiry() {
                   <FormMessage />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">
+                    Last Name: <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     autoCapitalize="none"
                     autoComplete="off"
@@ -201,7 +244,9 @@ export default function SendInquiry() {
               </div>
               <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">
+                    Email: <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     autoCapitalize="none"
                     autoComplete="off"
@@ -213,7 +258,9 @@ export default function SendInquiry() {
                   <FormMessage />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">
+                    Phone Number: <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     autoCapitalize="none"
                     autoComplete="off"
@@ -239,7 +286,9 @@ export default function SendInquiry() {
                   <FormMessage />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="country">Country</Label>
+                  <Label htmlFor="country">
+                    Country: <span className="text-red-500">*</span>
+                  </Label>
                   <Select {...form.register('country')}>
                     <SelectTrigger className="w-[220px]">
                       <SelectValue placeholder="- Please Select" />
@@ -257,7 +306,10 @@ export default function SendInquiry() {
               </div>
               <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="communication">Preferred Communication</Label>
+                  <Label htmlFor="communication">
+                    Preferred Communication:{' '}
+                    <span className="text-red-500">*</span>
+                  </Label>
                   <Select {...form.register('communication')}>
                     <SelectTrigger className="w-[220px]">
                       <SelectValue placeholder="- Please Select" />
@@ -271,10 +323,11 @@ export default function SendInquiry() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="communication">
-                    Please type the code below{' '}
+                    Please type the code below:{' '}
+                    <span className="text-red-500">*</span>
                   </Label>
-                  <div className="flex flex-col w-full max-w-sm items-center space-x-2">
-                    <div className="flex w-full max-w-sm items-center space-x-2">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
                       <Input
                         type="text"
                         placeholder="Code"
@@ -283,10 +336,17 @@ export default function SendInquiry() {
                         autoComplete="off"
                         autoCorrect="off"
                         spellCheck="false"
+                        value={captcha}
                       />
-                      <Button type="submit">Refresh</Button>
+                      <Button
+                        type="button"
+                        onClick={() => setCaptcha(generateCaptcha())}
+                      >
+                        Refresh
+                      </Button>
                     </div>
                     <Input
+                      type="text"
                       autoCapitalize="none"
                       autoComplete="off"
                       autoCorrect="off"
