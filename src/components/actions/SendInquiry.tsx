@@ -10,14 +10,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,6 +25,9 @@ import {
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { Label } from '@/components/ui/label';
+
+import generateCaptcha from '@/utils/generateCapcha';
 
 async function loadCountries(): Promise<string[]> {
   const response = await fetch('https://restcountries.com/v2/all');
@@ -51,6 +47,13 @@ const schema = z.object({
     'Collaboration Opportunity',
     'Other',
   ]),
+  relationship: z.enum([
+    'Customer',
+    'Partner',
+    'Employee',
+    'Consultant',
+    'Other',
+  ]),
   salutation: z.enum(['Mr.', 'Ms.']).optional(),
   firstName: z.string(),
   lastName: z.string(),
@@ -61,17 +64,18 @@ const schema = z.object({
   communication: z.enum(['email', 'phone']),
   code: z.string(),
   newsletter: z.boolean().optional(),
-  termsAndConditions: z.boolean(),
+  termsAndConditions: z.boolean().optional(),
 });
 
 type Inquiry = z.infer<typeof schema>;
 
-interface SendInquiryProps {
-  children?: React.ReactNode;
-}
+// interface SendInquiryProps {
+//   children?: React.ReactNode;
+// }
 
-export default function SendInquiry({ children }: SendInquiryProps) {
+export default function SendInquiry() {
   const [countries, setCountries] = useState<string[]>([]);
+  const [captcha, setCaptcha] = useState<string>(generateCaptcha());
 
   useEffect(() => {
     loadCountries().then((countries) => setCountries(countries));
@@ -79,6 +83,7 @@ export default function SendInquiry({ children }: SendInquiryProps) {
 
   const form = useForm<Inquiry>({
     resolver: zodResolver(schema),
+    mode: 'onSubmit',
     defaultValues: {
       newsletter: false,
       termsAndConditions: false,
@@ -86,293 +91,280 @@ export default function SendInquiry({ children }: SendInquiryProps) {
   });
 
   function onSubmit(values: Inquiry) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+    console.log(values);
+    if (values.code !== captcha) {
+      form.setError('code', {
+        type: 'manual',
+        message: 'Invalid code',
+      });
+      return;
+    }
+
     console.log(values);
   }
 
   return (
     <Sheet>
-      <SheetTrigger asChild onClick={() => console.log('pressed')}>
-        {children}
+      <SheetTrigger asChild>
+        <Button className={'w-full'}>Get Started</Button>
       </SheetTrigger>
-      <SheetContent side={'top'} className="w-[400px] sm:w-[540px]">
+      <SheetContent side={'top'} className="mx-auto w-full max-w-2xl">
         <SheetHeader>
           <SheetTitle>Inquiry</SheetTitle>
           <SheetDescription>
-            <p>
-              Send us a message and we'll get back to you as soon as possible.
-            </p>
+            Send us a message and we'll get back to you as soon as possible.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              control={form.control}
-              name="subject"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subject</FormLabel>
-                  <FormControl>
-                    <FormLabel htmlFor="subject">Subject</FormLabel>
-                    <Input {...field} />
-                  </FormControl>
+            <div className="flex flex-col gap-4 mt-4">
+              <div className="flex flex-col gap-2 w-full">
+                <Label htmlFor="subject">
+                  Subject: <span className="text-red-500">*</span>
+                </Label>
+                <Input {...form.register('subject')} />
+                <FormMessage />
+              </div>
+              <div className="flex flex-col gap-2 w-full">
+                <Label htmlFor="description">
+                  Description: <span className="text-red-500">*</span>
+                </Label>
+                <Textarea {...form.register('description')} />
+                <FormMessage />
+              </div>
+
+              <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="inquiryType">
+                    I am writing about: <span className="text-red-500">*</span>
+                  </Label>
+                  <Select {...form.register('inquiryType')}>
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="- Please Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="General Inquiry">
+                        General Inquiry
+                      </SelectItem>
+                      <SelectItem value="Project Development">
+                        Project Development
+                      </SelectItem>
+                      <SelectItem value="Software Maintenance">
+                        Software Maintenance
+                      </SelectItem>
+                      <SelectItem value="Technical Support">
+                        Technical Support
+                      </SelectItem>
+                      <SelectItem value="Collaboration Opportunity">
+                        Collaboration Opportunity
+                      </SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <FormLabel htmlFor="description">Description</FormLabel>
-                    <Textarea {...field} />
-                  </FormControl>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="company">Company/Academic Institution</Label>
+                  <Input
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    className="max-w-sm"
+                    {...form.register('company')}
+                  />
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex sm:flex-col gap-2">
-              <FormField
-                control={form.control}
-                name="inquiryType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <FormLabel htmlFor="inquiryType">Inquiry Type</FormLabel>
-                      <Select {...field}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="- Please Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="General Inquiry">
-                            General Inquiry
-                          </SelectItem>
-                          <SelectItem value="Project Development">
-                            Project Development
-                          </SelectItem>
-                          <SelectItem value="Software Maintenance">
-                            Software Maintenance
-                          </SelectItem>
-                          <SelectItem value="Technical Support">
-                            Technical Support
-                          </SelectItem>
-                          <SelectItem value="Collaboration Opportunity">
-                            Collaboration Opportunity
-                          </SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                </div>
+              </div>
 
-              <FormField
-                control={form.control}
-                name="company"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company</FormLabel>
-                    <FormControl>
-                      <FormLabel htmlFor="company">Company</FormLabel>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="relationship">
+                    Relationship to us: <span className="text-red-500">*</span>
+                  </Label>
+                  <Select {...form.register('relationship')}>
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="- Please Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Customer">Customer</SelectItem>
+                      <SelectItem value="Partner">Partner</SelectItem>
+                      <SelectItem value="Employee">Employee</SelectItem>
+                      <SelectItem value="Consultant">Consultant</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="salutation">Salutation</Label>
+                  <Select {...form.register('salutation')}>
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="- Please Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Mr.">Mr.</SelectItem>
+                      <SelectItem value="Ms.">Ms.</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </div>
+              </div>
 
-            <div className="flex sm:flex-col gap-2">
-              <FormField
-                control={form.control}
-                name="salutation"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <FormLabel htmlFor="salutation">Salutation</FormLabel>
-                      <Select {...field}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="- Please Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Mr.">Mr.</SelectItem>
-                          <SelectItem value="Ms.">Ms.</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex sm:flex-col gap-2">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <FormLabel htmlFor="firstName">First Name</FormLabel>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="firstName">
+                    First Name: <span className="text-red-500">*</span>
+                  </Label>
 
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <FormLabel htmlFor="lastName">Last Name</FormLabel>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex sm:flex-col gap-2">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <FormLabel htmlFor="email">Email</FormLabel>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <Input
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    className="max-w-sm"
+                    {...form.register('firstName')}
+                  />
+                  <FormMessage />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="lastName">
+                    Last Name: <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    className="max-w-sm"
+                    {...form.register('lastName')}
+                  />
+                  <FormMessage />
+                </div>
+              </div>
+              <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="email">
+                    Email: <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    className="max-w-sm"
+                    {...form.register('email')}
+                  />
+                  <FormMessage />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="phone">
+                    Phone Number: <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    className="max-w-sm"
+                    {...form.register('phone')}
+                  />
+                  <FormMessage />
+                </div>
+              </div>
+              <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    className="max-w-sm"
+                    {...form.register('city')}
+                  />
+                  <FormMessage />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="country">
+                    Country: <span className="text-red-500">*</span>
+                  </Label>
+                  <Select {...form.register('country')}>
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="- Please Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country: any, idx) => (
+                        <SelectItem key={idx} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </div>
+              </div>
+              <div className="grid grid-rows-2 md:grid-rows-none md:grid-cols-2 gap-2 w-full">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="communication">
+                    Preferred Communication:{' '}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Select {...form.register('communication')}>
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="- Please Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="phone">Phone</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="communication">
+                    Please type the code below:{' '}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="text"
+                        placeholder="Code"
+                        readOnly
+                        autoCapitalize="none"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck="false"
+                        value={captcha}
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => setCaptcha(generateCaptcha())}
+                      >
+                        Refresh
+                      </Button>
+                    </div>
+                    <Input
+                      type="text"
+                      autoCapitalize="none"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck="false"
+                      className="max-w-sm"
+                      {...form.register('code')}
+                    />
+                  </div>
+                  <FormMessage />
+                </div>
+              </div>
+              <SheetFooter>
+                <Button type="submit">Submit</Button>
 
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <FormLabel htmlFor="phone">Phone</FormLabel>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <SheetClose>Close</SheetClose>
+              </SheetFooter>
             </div>
-            <div className="flex flex-col gap-2">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <FormLabel htmlFor="city">City</FormLabel>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <FormLabel htmlFor="country">Country</FormLabel>
-                      <Select {...field}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="- Please Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {countries.map((country: any) => (
-                            <SelectItem value={country}>{country}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex sm:flex-col gap-2">
-              <FormField
-                control={form.control}
-                name="communication"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <FormLabel htmlFor="communication">
-                        Preferred Communication
-                      </FormLabel>
-                      <Select {...field}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="- Please Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="email">Email</SelectItem>
-                          <SelectItem value="phone">Phone</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <FormLabel htmlFor="communication">
-                        Please type the code below{' '}
-                      </FormLabel>
-                      <div className="flex flex-col w-full max-w-sm items-center space-x-2">
-                        <div className="flex w-full max-w-sm items-center space-x-2">
-                          <Input
-                            type="text"
-                            placeholder="Code"
-                            readOnly
-                            autoCapitalize="none"
-                            autoComplete="off"
-                            autoCorrect="off"
-                            spellCheck="false"
-                          />
-                          <Button type="submit">Refresh</Button>
-                        </div>
-                        <Input {...field} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <Button type="submit">Submit</Button>
           </form>
-          <SheetFooter>
-            <SheetClose>Close</SheetClose>
-          </SheetFooter>
         </Form>
       </SheetContent>
     </Sheet>
