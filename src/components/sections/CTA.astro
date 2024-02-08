@@ -53,11 +53,7 @@ import Paragraph from '../shared/Paragraph.astro';
           software integration for strategic digital marketing success.
         </Paragraph>
         <div class="mx-auto max-w-md sm:max-w-xl pt-10">
-          <SendInquiry>
-            <Button className={'w-full'} onClick={() => console.log('pressed')}>
-              Get Started
-            </Button>
-          </SendInquiry>
+          <SendInquiry client:load />
         </div>
       </div>
     </div>
