@@ -29,7 +29,7 @@ export default function CompanyCarousel() {
               <img
                 src={`/images/companies/${
                   i % 3 === 0
-                    ? 'itgix.webp'
+                    ? 'itgix.jpeg'
                     : i % 3 === 1
                     ? 'haemimont.jpeg'
                     : 'trading212.png'
