@@ -9,7 +9,7 @@ import {
 export default function CompanyCarousel() {
   return (
     <div className="flex flex-col justify-center mt-32 gap-8">
-      <h2 className="text-3xl font-bold text-center">
+      <h2 className="text-3xl font-bold text-center px-2">
         Associated with companies like
       </h2>
 
@@ -18,6 +18,7 @@ export default function CompanyCarousel() {
         opts={{
           align: 'start',
           loop: true,
+          active: true,
         }}
       >
         <CarouselContent className="-ml-4 h-[200px]" aria-label="Companies">
