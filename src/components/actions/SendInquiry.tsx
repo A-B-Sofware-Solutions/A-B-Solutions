@@ -36,18 +36,22 @@ async function loadCountries(): Promise<string[]> {
   return data.map((country: any) => country.name);
 }
 
+const inquiryTypesOptions = [
+  'General Inquiry',
+  'Project Development',
+  'Software Maintenance',
+  'Technical Support',
+  'Collaboration Opportunity',
+  'Other',
+] as const;
+
+type InquiryType = (typeof inquiryTypesOptions)[number];
+
 const schema = z.object({
   subject: z.string().min(1, { message: 'Too short' }),
   description: z.string().min(1, { message: 'Too short' }),
   company: z.string().optional(),
-  inquiryType: z.enum([
-    'General Inquiry',
-    'Project Development',
-    'Software Maintenance',
-    'Technical Support',
-    'Collaboration Opportunity',
-    'Other',
-  ]),
+  inquiryType: z.enum(inquiryTypesOptions),
   relationship: z.enum([
     'Customer',
     'Partner',
@@ -163,13 +167,23 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                 <Label htmlFor="subject">
                   Subject: <span className="text-red-500">*</span>
                 </Label>
-                <Input {...form.register('subject')} />
+                <Input
+                  className={`${
+                    form.formState.errors.subject && 'border-red-500'
+                  }`}
+                  {...form.register('subject')}
+                />
               </div>
               <div className="flex flex-col gap-2 w-full">
                 <Label htmlFor="description">
                   Description: <span className="text-red-500">*</span>
                 </Label>
-                <Textarea {...form.register('description')} />
+                <Textarea
+                  className={`${
+                    form.formState.errors.subject && 'border-red-500'
+                  }`}
+                  {...form.register('description')}
+                />
               </div>
 
               <div className="flex flex-wrap justify-between gap-2 w-full">
@@ -178,26 +192,19 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     I am writing about: <span className="text-red-500">*</span>
                   </Label>
                   <Select {...form.register('inquiryType')}>
-                    <SelectTrigger className="w-[220px]">
+                    <SelectTrigger
+                      className={`${
+                        form.formState.errors.subject && 'border-red-500'
+                      } w-[220px]`}
+                    >
                       <SelectValue placeholder="- Please Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="General Inquiry">
-                        General Inquiry
-                      </SelectItem>
-                      <SelectItem value="Project Development">
-                        Project Development
-                      </SelectItem>
-                      <SelectItem value="Software Maintenance">
-                        Software Maintenance
-                      </SelectItem>
-                      <SelectItem value="Technical Support">
-                        Technical Support
-                      </SelectItem>
-                      <SelectItem value="Collaboration Opportunity">
-                        Collaboration Opportunity
-                      </SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      {inquiryTypesOptions.map((type, idx) => (
+                        <SelectItem key={idx} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -220,7 +227,11 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     Relationship to us: <span className="text-red-500">*</span>
                   </Label>
                   <Select {...form.register('relationship')}>
-                    <SelectTrigger className="w-[220px]">
+                    <SelectTrigger
+                      className={`${
+                        form.formState.errors.subject && 'border-red-500'
+                      } w-[220px]`}
+                    >
                       <SelectValue placeholder="- Please Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -257,7 +268,9 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     autoComplete="off"
                     autoCorrect="off"
                     spellCheck="false"
-                    className="min-w-56"
+                    className={`${
+                      form.formState.errors.subject && 'border-red-500'
+                    } min-w-56`}
                     {...form.register('firstName')}
                   />
                 </div>
@@ -270,7 +283,9 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     autoComplete="off"
                     autoCorrect="off"
                     spellCheck="false"
-                    className="min-w-56"
+                    className={`${
+                      form.formState.errors.subject && 'border-red-500'
+                    } min-w-56`}
                     {...form.register('lastName')}
                   />
                 </div>
@@ -285,7 +300,9 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     autoComplete="off"
                     autoCorrect="off"
                     spellCheck="false"
-                    className="min-w-60"
+                    className={`${
+                      form.formState.errors.subject && 'border-red-500'
+                    } min-w-56`}
                     {...form.register('email')}
                   />
                 </div>
@@ -298,7 +315,9 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     autoComplete="off"
                     autoCorrect="off"
                     spellCheck="false"
-                    className="min-w-56"
+                    className={`${
+                      form.formState.errors.subject && 'border-red-500'
+                    } min-w-56`}
                     {...form.register('phone')}
                   />
                 </div>
@@ -320,7 +339,11 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     Country: <span className="text-red-500">*</span>
                   </Label>
                   <Select {...form.register('country')}>
-                    <SelectTrigger className="w-[220px]">
+                    <SelectTrigger
+                      className={`${
+                        form.formState.errors.subject && 'border-red-500'
+                      } w-[220px]`}
+                    >
                       <SelectValue placeholder="- Please Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -340,7 +363,11 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     <span className="text-red-500">*</span>
                   </Label>
                   <Select {...form.register('communication')}>
-                    <SelectTrigger className="w-[220px]">
+                    <SelectTrigger
+                      className={`${
+                        form.formState.errors.subject && 'border-red-500'
+                      } w-[220px]`}
+                    >
                       <SelectValue placeholder="- Please Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -392,10 +419,13 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     <Input
                       type="text"
                       autoCapitalize="none"
+                      placeholder="Type the code"
                       autoComplete="off"
                       autoCorrect="off"
                       spellCheck="false"
-                      className="min-w-56"
+                      className={`${
+                        form.formState.errors.subject && 'border-red-500'
+                      } min-w-56`}
                       {...form.register('code')}
                     />
                   </div>
