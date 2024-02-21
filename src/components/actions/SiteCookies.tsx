@@ -12,7 +12,6 @@ import {
 export default function SiteCookies() {
   const checkCookies = () => {
     if (typeof document === 'undefined') return;
-    console.log(document.cookie.includes('cookies-consent=accepted'));
     return (
       !document.cookie.includes('cookies-consent=accepted') &&
       !document.cookie.includes('cookies-consent=rejected')
