@@ -8,6 +8,7 @@ import Features from '../components/sections/Features.astro';
 import CTA from '../components/sections/CTA.astro';
 import Brands from '../components/sections/Brands.astro';
 import Contact from '../components/sections/Contact.astro';
+import SiteCookies from '@/components/actions/SiteCookies';
 ---
 
 <Layout title="Welcome to A&B Solutions">
@@ -19,5 +20,6 @@ import Contact from '../components/sections/Contact.astro';
     <Features />
     <!-- <Contact /> -->
     <CTA />
+    <SiteCookies client:only />
   </main>
 </Layout>
