@@ -10,7 +10,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 
-import { Form } from '@/components/ui/form';
+import { Form, FormField, FormItem } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,34 +36,43 @@ async function loadCountries(): Promise<string[]> {
   return data.map((country: any) => country.name);
 }
 
-const inquiryTypesOptions = [
-  'General Inquiry',
-  'Project Development',
-  'Software Maintenance',
-  'Technical Support',
-  'Collaboration Opportunity',
-  'Other',
-] as const;
+enum inquiryTypeEnum {
+  GeneralInquiry = 'General Inquiry',
+  ProjectDevelopment = 'Project Development',
+  SoftwareMaintenance = 'Software Maintenance',
+  TechnicalSupport = 'Technical Support',
+  CollaborationOpportunity = 'Collaboration Opportunity',
+  Other = 'Other',
+}
 
-type InquiryType = (typeof inquiryTypesOptions)[number];
+enum relationshipEnum {
+  Customer = 'Customer',
+  Partner = 'Partner',
+  Employee = 'Employee',
+  Consultant = 'Consultant',
+  Other = 'Other',
+}
+
+enum salutationEnum {
+  Mr = 'Mr',
+  Ms = 'Ms',
+}
+
+enum communicationEnum {
+  Email = 'Email',
+  Phone = 'Phone',
+}
 
 const schema = z.object({
   subject: z.string().min(1, { message: 'Too short' }),
   description: z.string().min(1, { message: 'Too short' }),
   company: z.string().optional(),
-  inquiryType: z.enum(inquiryTypesOptions),
-  relationship: z.enum([
-    'Customer',
-    'Partner',
-    'Employee',
-    'Consultant',
-    'Other',
-  ]),
-  salutation: z.enum(['Mr.', 'Ms.']).optional(),
+  inquiryType: z.nativeEnum(inquiryTypeEnum),
+  relationship: z.nativeEnum(relationshipEnum),
+  salutation: z.nativeEnum(salutationEnum).optional(),
   firstName: z.string().min(1, { message: 'Too short' }),
   lastName: z.string().min(1, { message: 'Too short' }),
-  email: z.string().email().trim().max(18).min(1),
-  // check if phone number is valid
+  email: z.string().email(),
   phone: z
     .string()
     .min(10, { message: 'Too short' })
@@ -72,10 +81,8 @@ const schema = z.object({
     }),
   country: z.string(),
   city: z.string().optional(),
-  communication: z.enum(['email', 'phone']),
+  communication: z.nativeEnum(communicationEnum),
   code: z.string(),
-  newsletter: z.boolean().optional(),
-  termsAndConditions: z.boolean().optional(),
 });
 
 type Inquiry = z.infer<typeof schema>;
@@ -101,27 +108,23 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
   const form = useForm<Inquiry>({
     resolver: zodResolver(schema),
     mode: 'onSubmit',
-    defaultValues: {
-      newsletter: false,
-      termsAndConditions: false,
-    },
   });
 
   const onSubmit: SubmitHandler<Inquiry> = async (values) => {
-    console.log(values);
     if (values.code !== captcha) {
+      console.log('Invalid code');
       form.setError('code', {
         type: 'manual',
         message: 'Invalid code',
       });
       return;
     }
-
-    console.log(values);
   };
 
   const onError = (error: any) => {
     console.log(error);
+    // console.log(form.getValues());
+    // form.setValue('inquiryType', 'General Inquiry');
   };
 
   return (
@@ -162,7 +165,7 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onError)}>
-            <div className="flex flex-col mt-4 p-2 gap-4 overflow-y-scroll h-screen pb-32">
+            <div className="flex flex-col mt-4 p-2 gap-4 overflow-y-auto h-screen pb-32">
               <div className="flex flex-col h-fit gap-2 w-full">
                 <Label htmlFor="subject">
                   Subject: <span className="text-red-500">*</span>
@@ -180,7 +183,7 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                 </Label>
                 <Textarea
                   className={`${
-                    form.formState.errors.subject && 'border-red-500'
+                    form.formState.errors.description && 'border-red-500'
                   }`}
                   {...form.register('description')}
                 />
@@ -188,25 +191,35 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
 
               <div className="flex flex-wrap justify-between gap-2 w-full">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="inquiryType">
-                    I am writing about: <span className="text-red-500">*</span>
-                  </Label>
-                  <Select {...form.register('inquiryType')}>
-                    <SelectTrigger
-                      className={`${
-                        form.formState.errors.subject && 'border-red-500'
-                      } w-[220px]`}
-                    >
-                      <SelectValue placeholder="- Please Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {inquiryTypesOptions.map((type, idx) => (
-                        <SelectItem key={idx} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormField
+                    control={form.control}
+                    name="inquiryType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label htmlFor="inquiryType">
+                          I am writing about:{' '}
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        <Select onValueChange={field.onChange}>
+                          <SelectTrigger
+                            className={`${
+                              form.formState.errors.inquiryType &&
+                              'border-red-500'
+                            } w-[220px]`}
+                          >
+                            <SelectValue placeholder="- Please Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getValues(inquiryTypeEnum).map((type, idx) => (
+                              <SelectItem key={idx} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="company">Company/Academic Institution</Label>
@@ -223,37 +236,62 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
 
               <div className="flex flex-wrap justify-between gap-2 w-full">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="relationship">
-                    Relationship to us: <span className="text-red-500">*</span>
-                  </Label>
-                  <Select {...form.register('relationship')}>
-                    <SelectTrigger
-                      className={`${
-                        form.formState.errors.subject && 'border-red-500'
-                      } w-[220px]`}
-                    >
-                      <SelectValue placeholder="- Please Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Customer">Customer</SelectItem>
-                      <SelectItem value="Partner">Partner</SelectItem>
-                      <SelectItem value="Employee">Employee</SelectItem>
-                      <SelectItem value="Consultant">Consultant</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormField
+                    control={form.control}
+                    name="relationship"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label htmlFor="relationship">
+                          Relationship to us:{' '}
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        <Select onValueChange={field.onChange}>
+                          <SelectTrigger
+                            className={`${
+                              form.formState.errors.relationship &&
+                              'border-red-500'
+                            } w-[220px]`}
+                          >
+                            <SelectValue placeholder="- Please Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getValues(relationshipEnum).map(
+                              (relationship, idx) => (
+                                <SelectItem key={idx} value={relationship}>
+                                  {relationship}
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="salutation">Salutation</Label>
-                  <Select {...form.register('salutation')}>
-                    <SelectTrigger className="w-[220px]">
-                      <SelectValue placeholder="- Please Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Mr.">Mr.</SelectItem>
-                      <SelectItem value="Ms.">Ms.</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormField
+                    control={form.control}
+                    name="salutation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label htmlFor="salutation">Salutation</Label>
+                        <Select onValueChange={field.onChange}>
+                          <SelectTrigger className="w-[220px]">
+                            <SelectValue placeholder="- Please Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getValues(salutationEnum).map(
+                              (salutation, idx) => (
+                                <SelectItem key={idx} value={salutation}>
+                                  {salutation}
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
 
@@ -269,7 +307,7 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     autoCorrect="off"
                     spellCheck="false"
                     className={`${
-                      form.formState.errors.subject && 'border-red-500'
+                      form.formState.errors.firstName && 'border-red-500'
                     } min-w-56`}
                     {...form.register('firstName')}
                   />
@@ -284,7 +322,7 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     autoCorrect="off"
                     spellCheck="false"
                     className={`${
-                      form.formState.errors.subject && 'border-red-500'
+                      form.formState.errors.lastName && 'border-red-500'
                     } min-w-56`}
                     {...form.register('lastName')}
                   />
@@ -301,7 +339,7 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     autoCorrect="off"
                     spellCheck="false"
                     className={`${
-                      form.formState.errors.subject && 'border-red-500'
+                      form.formState.errors.email && 'border-red-500'
                     } min-w-56`}
                     {...form.register('email')}
                   />
@@ -335,46 +373,68 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="country">
-                    Country: <span className="text-red-500">*</span>
-                  </Label>
-                  <Select {...form.register('country')}>
-                    <SelectTrigger
-                      className={`${
-                        form.formState.errors.subject && 'border-red-500'
-                      } w-[220px]`}
-                    >
-                      <SelectValue placeholder="- Please Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {countries.map((country: any, idx) => (
-                        <SelectItem key={idx} value={country}>
-                          {country}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormField
+                    control={form.control}
+                    name="country"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label htmlFor="country">
+                          Country: <span className="text-red-500">*</span>
+                        </Label>
+                        <Select onValueChange={field.onChange}>
+                          <SelectTrigger
+                            className={`${
+                              form.formState.errors.country && 'border-red-500'
+                            } w-[220px]`}
+                          >
+                            <SelectValue placeholder="- Please Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {countries.map((country: any, idx) => (
+                              <SelectItem key={idx} value={country}>
+                                {country}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
               <div className="flex flex-wrap justify-between gap-2 w-full">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="communication">
-                    Preferred Communication:{' '}
-                    <span className="text-red-500">*</span>
-                  </Label>
-                  <Select {...form.register('communication')}>
-                    <SelectTrigger
-                      className={`${
-                        form.formState.errors.subject && 'border-red-500'
-                      } w-[220px]`}
-                    >
-                      <SelectValue placeholder="- Please Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="phone">Phone</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormField
+                    control={form.control}
+                    name="communication"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label htmlFor="communication">
+                          Preferred Communication:{' '}
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        <Select onValueChange={field.onChange}>
+                          <SelectTrigger
+                            className={`${
+                              form.formState.errors.communication &&
+                              'border-red-500'
+                            } w-[220px]`}
+                          >
+                            <SelectValue placeholder="- Please Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getValues(communicationEnum).map(
+                              (communication, idx) => (
+                                <SelectItem key={idx} value={communication}>
+                                  {communication}
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="communication">
@@ -419,12 +479,12 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
                     <Input
                       type="text"
                       autoCapitalize="none"
-                      placeholder="Type the code"
+                      placeholder={'Type the code'}
                       autoComplete="off"
                       autoCorrect="off"
                       spellCheck="false"
                       className={`${
-                        form.formState.errors.subject && 'border-red-500'
+                        form.formState.errors.code && 'border-red-500'
                       } min-w-56`}
                       {...form.register('code')}
                     />
@@ -433,8 +493,12 @@ export default function SendInquiry({ isHero }: SendInquiryProps) {
               </div>
               <SheetFooter>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Button type="submit" onSubmit={form.handleSubmit(onSubmit)}>
-                    Submit
+                  <Button
+                    type="submit"
+                    className="w-full sm:w-auto"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? 'Sending...' : 'Submit'}
                   </Button>
                   <SheetClose asChild>
                     <Button
